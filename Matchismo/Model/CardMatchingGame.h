@@ -10,7 +10,7 @@
 #import "Deck.h"
 
 @interface CardMatchingGame : NSObject
-    @property (nonatomic, readonly) NSString *lastMatchAttempt;
+    @property (nonatomic, readonly) NSString *history;
     @property (nonatomic, readonly) int score;
 
     // designated initializer

@@ -23,12 +23,12 @@
 
 @implementation CardGameViewController
 
+
 - (CardMatchingGame *)game {
     if (!_game) {
         _game = [[CardMatchingGame alloc] initWithCardCount:[self.cardButtons count] usingDeck:[[PlayingCardDeck alloc] init] matchNumberOfCards:_difficultySlider.value];
         NSLog(@"Value: %f", self.difficultySlider.value);
     }
-    
     return _game;
 }
 
@@ -59,10 +59,13 @@
         }        
     }
     self.scoreLabel.text = [NSString stringWithFormat:@"Score: %d",self.game.score];
-    self.resultLabel.text = self.game.lastMatchAttempt;
+    self.resultLabel.text = self.game.history;
 }
 
 - (IBAction)flipCard:(UIButton *)sender {
+    if (self.difficultySlider.isEnabled) {
+        self.difficultySlider.enabled = !self.difficultySlider.enabled;
+    }
     [self.game flipCardAtIndex:[self.cardButtons indexOfObject:sender]];
     if (!sender.selected)
         self.flipCount++;
@@ -73,11 +76,14 @@
     self.game = nil;
     self.flipCount = 0;
     self.flipsLabel.text = @"Flips: 0";
+    self.difficultySlider.enabled = YES;
     [self updateUI];
 }
 
 - (IBAction)difficultySliderChange:(UISlider *)sender {
     [self.difficultySlider setValue:roundf(sender.value) animated:YES];
+    self.game = nil;
+    [self updateUI];
 }
 
 

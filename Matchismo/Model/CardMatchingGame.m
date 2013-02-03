@@ -12,7 +12,7 @@
     @property (strong, nonatomic) NSMutableArray *cards;
     @property (nonatomic, readwrite) int score;
     @property (nonatomic) NSUInteger matchNumberOfCards;
-    @property (nonatomic, readwrite) NSString *lastMatchAttempt;
+    @property (nonatomic, readwrite) NSString *history;
 @end
 
 @implementation CardMatchingGame
@@ -22,14 +22,14 @@
 #define MATCH_BONUS 2
 #define MINIMUM_MATCH_CARDS 2
 
-@synthesize lastMatchAttempt = _lastMatchAttempt;
+@synthesize history = _history;
 
-- (NSString *)lastMatchAttempt {
-    return _lastMatchAttempt ? _lastMatchAttempt : @"GAME TIME!!!!";
+- (NSString *)history {
+    return _history ? _history : @"";;
 }
 
-- (void)setLastAction:(NSString *)lastMatchAttempt {
-    _lastMatchAttempt = lastMatchAttempt;
+- (void)setHistory:(NSString *)history {
+    _history = history;
 }
 
 - (NSMutableArray *)cards {
@@ -59,6 +59,7 @@
         } else {
             self.matchNumberOfCards = matchNumberOfCards;
         }
+        self.history = [self.history stringByAppendingFormat:@"GAME TIME\nMATCH %D CARDS!!!", matchNumberOfCards];
     }
     
     return self;
@@ -78,13 +79,17 @@
     
     Card *card = [self cardAtIndex:index];
     
+    self.history = @"";
+    
     if (!card.isUnplayable) {
         if (!card.isFaceUp) {
             matchingCards += 1; // Flipped card.
+            self.history = [self.history stringByAppendingFormat:@"[ %@ ]", card.contents];
             
             // See if flipping this card up creates a match
             for(Card *otherCard in self.cards) {
                 if (otherCard.isFaceUp && !otherCard.isUnplayable) {
+                    self.history = [self.history stringByAppendingFormat:@" %@", otherCard.contents];
                     [facingUpAndPlayable addObject:otherCard];
                     matchScore = [card match:@[otherCard]];
                     if (matchScore > 0) {
@@ -106,11 +111,14 @@
                     otherCard.unplayable = YES;
                 }
                 
+                self.history = [self.history stringByAppendingFormat:@" \nPOW!!!! They match! \n%d Points.", cumulativeMatchScore * MATCH_BONUS * self.matchNumberOfCards];
+                
             } else if ( misMatchCards > 0 ){ // remove
                 self.score -= MISMATCH_PENALTY;
                 for (Card *otherCard in facingUpAndPlayable) {
                     otherCard.faceUp = NO;
                 }
+                self.history = [self.history stringByAppendingFormat:@" \nBOO!!!! They do not match.\n-%d Points.", MISMATCH_PENALTY];
                 
             }
         }
