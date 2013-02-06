@@ -26,8 +26,9 @@
 
 - (CardMatchingGame *)game {
     if (!_game) {
-        _game = [[CardMatchingGame alloc] initWithCardCount:[self.cardButtons count] usingDeck:[[PlayingCardDeck alloc] init] matchNumberOfCards:_difficultySlider.value];
-        NSLog(@"Value: %f", self.difficultySlider.value);
+        _game = [[CardMatchingGame alloc] initWithCardCount:[self.cardButtons count]
+                                                  usingDeck:[[PlayingCardDeck alloc] init]
+                                         matchNumberOfCards:_difficultySlider.value];
     }
     return _game;
 }
@@ -43,23 +44,37 @@
 }
 
 - (void)updateUI {
+    //NSString *gameover;
+    self.scoreLabel.text = [NSString stringWithFormat:@"Score: %d",self.game.score];
+    self.resultLabel.text = self.game.history;
+    
+    if ([self.game isGameOver]) {
+        self.resultLabel.text = [self.resultLabel.text stringByAppendingString:@"\nGame Over"];
+    }
+    
     for (UIButton *cardButton in self.cardButtons) {
         Card *card = [self.game cardAtIndex:[self.cardButtons indexOfObject:cardButton]];
         [cardButton setTitle:card.contents forState:UIControlStateSelected];
         [cardButton setTitle:card.contents forState:UIControlStateSelected|UIControlStateDisabled];
-        
-        cardButton.selected = card.isFaceUp;
-        cardButton.enabled = !card.isUnplayable;
-        cardButton.alpha = card.isUnplayable ? 0.3 : 1.0;
-        
+
         if (card.isFaceUp) {
             [cardButton setImage:nil forState:UIControlStateNormal];
         } else {
             [cardButton setImage:[UIImage imageNamed:@"cardback.jpg"] forState:UIControlStateNormal];
-        }        
+        }
+        
+        // from https://github.com/tsunglintsai/standford-cs193p-01-card-game (149-154)
+        if (cardButton.selected != card.isFaceUp) {
+            [UIView beginAnimations:@"flipbutton" context:NULL];
+            [UIView setAnimationDuration:0.4];
+            [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:cardButton cache:YES];
+            [UIView commitAnimations];
+        }
+        
+        cardButton.selected = card.isFaceUp;
+        cardButton.enabled = !card.isUnplayable;
+        cardButton.alpha = card.isUnplayable ? 0.3 : 1.0;
     }
-    self.scoreLabel.text = [NSString stringWithFormat:@"Score: %d",self.game.score];
-    self.resultLabel.text = self.game.history;
 }
 
 - (IBAction)flipCard:(UIButton *)sender {
