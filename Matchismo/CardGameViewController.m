@@ -48,20 +48,18 @@
     self.scoreLabel.text = [NSString stringWithFormat:@"Score: %d",self.game.score];
     self.resultLabel.text = self.game.history;
     
-    if ([self.game isGameOver]) {
+    if ([self.game isGameOver])
         self.resultLabel.text = [self.resultLabel.text stringByAppendingString:@"\nGame Over"];
-    }
     
     for (UIButton *cardButton in self.cardButtons) {
         Card *card = [self.game cardAtIndex:[self.cardButtons indexOfObject:cardButton]];
         [cardButton setTitle:card.contents forState:UIControlStateSelected];
         [cardButton setTitle:card.contents forState:UIControlStateSelected|UIControlStateDisabled];
 
-        if (card.isFaceUp) {
+        if (card.isFaceUp)
             [cardButton setImage:nil forState:UIControlStateNormal];
-        } else {
+        else
             [cardButton setImage:[UIImage imageNamed:@"cardback.jpg"] forState:UIControlStateNormal];
-        }
         
         // from https://github.com/tsunglintsai/standford-cs193p-01-card-game (149-154)
         if (cardButton.selected != card.isFaceUp) {
@@ -78,12 +76,14 @@
 }
 
 - (IBAction)flipCard:(UIButton *)sender {
-    if (self.difficultySlider.isEnabled) {
+    if (self.difficultySlider.isEnabled)
         self.difficultySlider.enabled = !self.difficultySlider.enabled;
-    }
+
     [self.game flipCardAtIndex:[self.cardButtons indexOfObject:sender]];
+    
     if (!sender.selected)
         self.flipCount++;
+    
     [self updateUI];
 }
 

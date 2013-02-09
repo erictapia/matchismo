@@ -21,9 +21,8 @@
 }
 
 - (void)setSuit:(NSString *)suit {
-    if ([[PlayingCard validSuits] containsObject:suit]) {
+    if ([[PlayingCard validSuits] containsObject:suit])
         _suit = suit;
-    }
 }
 
 - (NSString *)suit {
@@ -39,9 +38,8 @@
 }
 
 - (void)setRank:(NSUInteger)rank {
-    if (rank <= [PlayingCard maxRank]) {
+    if (rank <= [PlayingCard maxRank])
         _rank = rank;
-    }
 }
 
 - (int)match:(NSArray *)otherCards {
@@ -50,11 +48,10 @@
     if ([otherCards count] == 1) {
         PlayingCard *otherCard = [otherCards lastObject];
         
-        if ([otherCard.suit isEqualToString:self.suit]) {
+        if ([otherCard.suit isEqualToString:self.suit])
             score = 1;
-        } else if (otherCard.rank == self.rank) {
+        else if (otherCard.rank == self.rank)
             score = 4;
-        }
     } 
     
     return score;

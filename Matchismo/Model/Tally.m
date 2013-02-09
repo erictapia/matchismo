@@ -10,56 +10,47 @@
 
 @interface Tally()
     @property (nonatomic) NSMutableDictionary *tally;
-    @property (nonatomic, readwrite) NSInteger maxKeyCount;
+    @property (nonatomic, readwrite) NSInteger highestTallyCount;
 @end
 
 @implementation Tally
 
 - (NSMutableDictionary *)tally {
-    if(!_tally) {
+    if(!_tally)
         _tally = [[NSMutableDictionary alloc] init];
-    }
     
     return _tally;
 }
 
-- (NSInteger)maxKeyCount {
-    if(!_maxKeyCount) {
-        _maxKeyCount = 0;
-    }
+- (NSInteger)highestTallyCount {
+    if(!_highestTallyCount) 
+        _highestTallyCount = 0;
     
-    return _maxKeyCount;
+    return _highestTallyCount;
 }
 
-- (void)updateKeys:(id)key withIncrementValue:(int) value {
-    NSNumber *currentValue = [self.tally objectForKey:key];
+- (void)updateKey:(id)key byAddingValue:(int) value {
+    NSNumber *currentTally = [self.tally objectForKey:key];
 
-    if (currentValue) {
-        NSNumber *newValue = [NSNumber numberWithInt:[currentValue intValue] + value];
-        [self.tally setObject:newValue forKey:key];
-        
-        if ([newValue integerValue] > self.maxKeyCount) {
-            self.maxKeyCount = [newValue integerValue];
-        }
-    } else {
-        [self.tally setObject:[NSNumber numberWithInt:value] forKey:key];
-    }
+    if (currentTally) 
+        [self.tally setObject:@([currentTally intValue] + value) forKey:key];
+    else 
+        [self.tally setObject:@(value) forKey:key];
+    
 
-    [self checkMaxKeyCount];
+    [self updateHighestTallyCount];
 }
 
-- (void)checkMaxKeyCount{
+- (void)updateHighestTallyCount{
     
-    NSInteger maxValue = 0;
+    NSInteger maxTally = 0;
     
     for (id key in self.tally) {
-        NSInteger value = [[self.tally objectForKey:key] intValue];
-        if ( value > maxValue) {
-            maxValue = value;
-        }
+        if ( [[self.tally objectForKey:key] intValue] > maxTally)
+            maxTally = [[self.tally objectForKey:key] intValue];
     }
     
-    self.maxKeyCount = maxValue;
+    self.highestTallyCount = maxTally;
 }
 
 

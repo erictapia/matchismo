@@ -50,9 +50,8 @@
 }
 
 - (NSMutableArray *)cards {
-    if (!_cards) {
+    if (!_cards)
         _cards = [[NSMutableArray alloc] init];
-    }
     
     return _cards;
 }
@@ -64,9 +63,8 @@
 - (BOOL)isGameOver {
     BOOL gameOver = YES;
 
-    if (self.tally.maxKeyCount >= self.matchNumberOfCards) {
+    if (self.tally.highestTallyCount >= self.matchNumberOfCards)
         gameOver = NO;
-    }
 
     if(gameOver) {
         for (Card *card in self.cards) {
@@ -82,15 +80,15 @@
     if (self) {
         for (int i = 0; i < cardCount; i++) {
             Card *card = [deck drawRandomCard];
-            if (!card) {
+            if (!card)
                 self = nil;
-            } else {
+            else {
                 self.cards[i] = card;
                 
                 // Update rank and suit current tally by incrementing by 1. 
                 NSNumber *rank = [NSNumber numberWithInt:((PlayingCard *)card).rank];
-                [self.tally updateKeys:rank withIncrementValue:1];
-                [self.tally updateKeys:[(PlayingCard *)card suit] withIncrementValue:1];
+                [self.tally updateKey:rank byAddingValue:1];
+                [self.tally updateKey:[(PlayingCard *)card suit] byAddingValue:1];
             }
         }
         
@@ -156,15 +154,15 @@
                 card.unplayable = YES;
                 
                 // For card, update tally by incrementing by -1. 
-                [self.tally updateKeys:[NSNumber numberWithInt:[(PlayingCard *)card rank]] withIncrementValue:-1];
-                [self.tally updateKeys:[(PlayingCard *)card suit] withIncrementValue:-1];
+                [self.tally updateKey:[NSNumber numberWithInt:[(PlayingCard *)card rank]] byAddingValue:-1];
+                [self.tally updateKey:[(PlayingCard *)card suit] byAddingValue:-1];
                 
                 for(Card *otherCard in facingUpAndPlayable) {
                     otherCard.unplayable = YES;
 
                     // For all other matching cards, update tally by incrementing by -1. 
-                    [self.tally updateKeys:[NSNumber numberWithInt:[(PlayingCard *)otherCard rank]] withIncrementValue:-1];
-                    [self.tally updateKeys:[(PlayingCard *)otherCard suit] withIncrementValue:-1];
+                    [self.tally updateKey:[NSNumber numberWithInt:[(PlayingCard *)otherCard rank]] byAddingValue:-1];
+                    [self.tally updateKey:[(PlayingCard *)otherCard suit] byAddingValue:-1];
                     
                 }
                 

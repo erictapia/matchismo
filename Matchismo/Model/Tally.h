@@ -17,8 +17,8 @@
 @interface Tally : NSObject
 
 // "maxKeycount" is a property for getting the max count of any key.
-    @property (nonatomic, readonly) NSInteger maxKeyCount;
+    @property (nonatomic, readonly) NSInteger highestTallyCount;
 
 // Method to add "value" to the "key" current value. 
-    - (void)updateKeys:(id)key withIncrementValue:(int) value;
+    - (void)updateKey:(id)key byAddingValue:(int) value;
 @end
