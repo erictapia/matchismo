@@ -16,7 +16,7 @@
 @interface CardMatchingGame : NSObject
 
 // A property containing the "history" of the last flipped card result.
-    @property (nonatomic, readonly) NSString *history;
+    @property (nonatomic, readonly) NSString *lastFlipResult;
 
 // A property containing the current game "score".
     @property (nonatomic, readonly) int score;

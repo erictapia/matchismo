@@ -22,31 +22,14 @@
     @property (nonatomic) NSUInteger matchNumberOfCards;
 
 // A property containing the "history" of the last flipped card result.
-    @property (nonatomic, readwrite) NSString *history;
+    @property (nonatomic, readwrite) NSString *lastFlipResult;
 
-// Tally maintains game counts of all ranks and suits
-    @property (nonatomic) Tally *tally;
 @end
 
 @implementation CardMatchingGame
 
-// Score values
-#define FLIP_COST 1
-#define MISMATCH_PENALTY 2
-#define MATCH_BONUS 2
-
-#define MINIMUM_MATCH_CARDS 2
-
-- (Tally *)tally {
-    
-    if (!_tally)
-        _tally = [[Tally alloc] init];
-    
-    return _tally;
-}
-
-- (NSString *)history {
-    return _history ? _history : @"";;
+- (NSString *)lastFlipResult {
+    return _lastFlipResult ? _lastFlipResult : @"";;
 }
 
 - (NSMutableArray *)cards {
@@ -60,18 +43,9 @@
     This method checks the state of the game.  When the game is over, a "YES" is returned otherwise
     a "NO" is returned.  If game is over, it will flagged all playing cards as faceup.
 */
-- (BOOL)isGameOver {
-    BOOL gameOver = YES;
+- (BOOL)isGameOver { //TODO
 
-    if (self.tally.highestTallyCount >= self.matchNumberOfCards)
-        gameOver = NO;
-
-    if(gameOver) {
-        for (Card *card in self.cards) {
-            card.faceUp = YES;
-        }
-    }
-    return gameOver;
+    return NO;
 }
 
 - (id)initWithCardCount:(NSUInteger)cardCount usingDeck:(Deck *)deck matchNumberOfCards:(NSUInteger)matchNumberOfCards {
@@ -84,21 +58,16 @@
                 self = nil;
             else {
                 self.cards[i] = card;
-                
-                // Update rank and suit current tally by incrementing by 1. 
-                NSNumber *rank = [NSNumber numberWithInt:((PlayingCard *)card).rank];
-                [self.tally updateKey:rank byAddingValue:1];
-                [self.tally updateKey:[(PlayingCard *)card suit] byAddingValue:1];
             }
         }
         
         // Must match at least 2
-        if ( matchNumberOfCards < 2) {
-            self.matchNumberOfCards = MINIMUM_MATCH_CARDS;
+        if ( matchNumberOfCards < [CardMatchingGame getMinimumMatchCards]) {
+            self.matchNumberOfCards = [CardMatchingGame getMinimumMatchCards];
         } else {
             self.matchNumberOfCards = matchNumberOfCards;
         }
-        self.history = [self.history stringByAppendingFormat:@"GAME TIME\nMATCH %D CARDS!!!", matchNumberOfCards];
+        self.lastFlipResult = [self.lastFlipResult stringByAppendingFormat:@"GAME TIME\nMATCH %D CARDS!!!", self.matchNumberOfCards];
     }
     
     return self;
@@ -108,78 +77,106 @@
     return (index < [self.cards count]) ? self.cards[index] : nil;
 }
 
+- (NSMutableArray *)getPlayableFaceUpCards {
+    NSMutableArray *cards = [[NSMutableArray alloc] init];
+    
+    // Build array of cards that are faceup and playable.
+    for (Card *card in self.cards) {
+        if (card.faceUp && !card.unplayable) {
+            [cards addObject:card];
+        }
+    }
+    
+    return cards;
+}
+
 // Game logic for N-Match
 - (void)flipCardAtIndex:(NSUInteger)index {
-    
-    // count of matching cards in its current state.
-    NSUInteger matchingCards = 0;
-    // count of miss match cards in its current state.
-    NSUInteger misMatchCards = 0;
-    NSUInteger matchScore = 0;
-    NSUInteger cumulativeMatchScore = 0;
-    NSMutableArray *facingUpAndPlayable = [[NSMutableArray alloc] init];
-    
+
     Card *card = [self cardAtIndex:index];
     
-    self.history = @"";
+    self.lastFlipResult = [@"Re-Flipped" stringByAppendingFormat:@" %@",card.contents];
     
-    if (!card.isUnplayable) {
-        if (!card.isFaceUp) {
-            matchingCards += 1; // Flipped card, assume matching and base for all other matching cards.
-            self.history = [self.history stringByAppendingFormat:@"[ %@ ]", card.contents];
+    if (!card.faceUp && !card.isUnplayable) {
+        self.lastFlipResult = [@"Flipped" stringByAppendingFormat:@" %@",card.contents];
+        
+        // Another flip, update "score"
+        self.score += [CardMatchingGame getFlipCost];
+        
+        // Get array of cards that are playable and faceup.
+        NSMutableArray *otherCards = [self getPlayableFaceUpCards];
+  
+        // Are we building or at minimum cards required for matching?
+        BOOL enoughCardsToMatch = ([otherCards count] + 1 == [self matchNumberOfCards]) ? YES : NO;
+        
+        if (enoughCardsToMatch) {
             
-            // Check if all other cards that are faceup and playable match.
-            for(Card *otherCard in self.cards) {
-                if (otherCard.isFaceUp && !otherCard.isUnplayable) {
-                    self.history = [self.history stringByAppendingFormat:@" %@", otherCard.contents];
-                    [facingUpAndPlayable addObject:otherCard];
-                    matchScore = [card match:@[otherCard]];
-                    
-                    if (matchScore > 0) {
-                        // Increment matching cards and keep cumulative match score
-                        matchingCards += 1;
-                        cumulativeMatchScore += matchScore;
-                    } else {
-                        // Increment Non-Matchin cards
-                        misMatchCards += 1;
-                    }
-                }
-            }
+            // Check if cards make a match
+            int matchScore = [card match:otherCards];
             
-            self.score -= FLIP_COST;
-            
-            if (matchingCards == self.matchNumberOfCards) {
-                self.score += cumulativeMatchScore * MATCH_BONUS * self.matchNumberOfCards;
+            if (matchScore) {
                 
-                card.unplayable = YES;
+                self.lastFlipResult = @"Matched:";
                 
-                // For card, update tally by incrementing by -1. 
-                [self.tally updateKey:[NSNumber numberWithInt:[(PlayingCard *)card rank]] byAddingValue:-1];
-                [self.tally updateKey:[(PlayingCard *)card suit] byAddingValue:-1];
-                
-                for(Card *otherCard in facingUpAndPlayable) {
+                for (Card *otherCard in otherCards) {
                     otherCard.unplayable = YES;
+                    self.lastFlipResult = [self.lastFlipResult stringByAppendingFormat:@" %@", otherCard.contents];
+                }
+                
+                self.lastFlipResult = [self.lastFlipResult stringByAppendingFormat:@" %@", card.contents];
+                
+                self.score += [CardMatchingGame getMatchBonus];
+                card.unplayable = YES;
 
-                    // For all other matching cards, update tally by incrementing by -1. 
-                    [self.tally updateKey:[NSNumber numberWithInt:[(PlayingCard *)otherCard rank]] byAddingValue:-1];
-                    [self.tally updateKey:[(PlayingCard *)otherCard suit] byAddingValue:-1];
-                    
+            } else {
+                // Game rules says these "otherCards" do not match.
+                // Make "otherCards" face down.
+                
+                
+                self.lastFlipResult = @"Miss-Match:";
+                
+                for (Card *otherCard in otherCards) {
+                    otherCard.faceUp = !otherCard.isFaceUp;
+                    self.lastFlipResult = [self.lastFlipResult stringByAppendingFormat:@" %@", otherCard.contents];
                 }
                 
-                self.history = [self.history stringByAppendingFormat:@" \nPOW!!!! They match! \n%d Points.", cumulativeMatchScore * MATCH_BONUS * self.matchNumberOfCards];
+                self.lastFlipResult = [self.lastFlipResult stringByAppendingFormat:@" %@", card.contents];
                 
-            } else if ( misMatchCards > 0 ){
-                // Miss match, set them as face down and deduct penalty for miss match.
-                self.score -= MISMATCH_PENALTY;
-                for (Card *otherCard in facingUpAndPlayable) {
-                    otherCard.faceUp = NO;
-                }
-                self.history = [self.history stringByAppendingFormat:@" \nBOO!!!! They do not match.\n-%d Points.", MISMATCH_PENALTY];
-                
+                self.score += [CardMatchingGame getMismatchPenalty];
             }
-        }
-        card.faceUp = !card.isFaceUp;
+
+            
+        } 
     }
+    
+    // Toggle "card" faceup
+    card.faceUp = !card.isFaceUp;
 }
+
+
+// CLASS METHODS --------------------------------------------------------
+
+// Score values
+#define FLIP_COST -1
+#define MISMATCH_PENALTY -2
+#define MATCH_BONUS 4
+#define MINIMUM_MATCH_CARDS 2
+
++ (NSInteger) getFlipCost {
+    return FLIP_COST;
+}
+
++ (NSInteger) getMismatchPenalty {
+    return MISMATCH_PENALTY;
+}
+
++ (NSInteger) getMatchBonus {
+    return MATCH_BONUS;
+}
+
++ (NSUInteger) getMinimumMatchCards {
+    return MINIMUM_MATCH_CARDS;
+}
+
 
 @end
