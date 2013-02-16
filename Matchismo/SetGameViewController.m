@@ -17,7 +17,15 @@
 
 @implementation SetGameViewController
 
-#define CARDS_TO_MATCH 3
+#define CARDS_TO_MATCH  3
+
+#define ALPHA_NONE      0.0
+#define ALPHA_QUARTER   0.25
+#define ALPHA_HALF      0.50
+#define ALPHA_WHOLE     1.00
+#define STROKE_WIDTH    -5
+
+
 
 - (NSUInteger)cardsToMatch {
     return CARDS_TO_MATCH;
@@ -28,52 +36,51 @@
 }
 
 - (NSString *)getUIFlipsLabel:(NSInteger)flips {
-    return [super getUIFlipsLabel:flips];
-}
-
-- (NSString *)getUIResultLabel:(NSString *)result{
-    return [super getUIResultLabel:result];
+    return [NSString stringWithFormat:@"Flips: %d", flips];
 }
 
 - (NSString *)getUIScoreLabel:(NSInteger)score {
-    return [super getUIScoreLabel:score];
+    return [NSString stringWithFormat:@"Score: %d", score];
+}
+
+- (NSString *)getUIResultLabel:(NSString *)result {
+    return result;
 }
 
 
-- (void)updateUIButton:(UIButton *)cardButton usingCard:(Card *)card {
-        
-    [cardButton setAttributedTitle:[self cardAttributedContents:card forFaceUp:NO] forState:UIControlStateNormal];
-    [cardButton setAttributedTitle:[self cardAttributedContents:card forFaceUp:YES] forState:UIControlStateSelected];
-    [cardButton setAttributedTitle:[self cardAttributedContents:card forFaceUp:YES] forState:UIControlStateSelected|UIControlStateDisabled];
-        
+- (void)updateUIButton:(UIButton *)cardButton usingCard:(Card *)card {    
+    [cardButton setAttributedTitle:[self cardAttributedContents:card]  forState:UIControlStateNormal];
+    [cardButton setAttributedTitle:[self cardAttributedContents:card] forState:UIControlStateSelected];
+    [cardButton setAttributedTitle:[self cardAttributedContents:card] forState:UIControlStateSelected|UIControlStateDisabled];
+    
     cardButton.selected = card.isFaceUp;
     cardButton.enabled  = !card.isUnplayable;
         
     if (cardButton.enabled && cardButton.selected) {
-        cardButton.alpha    = 0.6;
+        cardButton.alpha    = ALPHA_HALF;
     } else if (!cardButton.enabled){
-        cardButton.alpha    = 0;
+        cardButton.alpha    = ALPHA_NONE;
     } else {
-        cardButton.alpha    = 1.0;
+        cardButton.alpha    = ALPHA_WHOLE;
     }
 }
 
+- (NSAttributedString *)cardAttributedContents:(Card *)card {
 
-// From Joan Carles Catalan
-- (NSAttributedString *)cardAttributedContents:(Card *)card forFaceUp:(BOOL)isFaceUp
-{
-    NSArray *colorPallette = @[[UIColor redColor],[UIColor greenColor],[UIColor purpleColor]];
-    NSArray *alphaPallette = @[@0,@0.2,@1];
     
-    UIColor *cardOutlineColor = colorPallette[((SetCard *)card).color-1]; // 0 base index
-    UIColor *cardColor = [cardOutlineColor colorWithAlphaComponent:(CGFloat)[alphaPallette[((SetCard *)card).shading-1] floatValue]];
+    NSInteger colorIndex    = ((SetCard *)card).color;
+    NSInteger shadingIndex  = ((SetCard *) card).shading;
     
-    NSDictionary *cardAttributes = @{NSForegroundColorAttributeName : cardColor, NSStrokeColorAttributeName : cardOutlineColor, NSStrokeWidthAttributeName: @-5};
+    CGFloat shading = [@[@ALPHA_NONE, @ALPHA_QUARTER, @ALPHA_WHOLE][shadingIndex] floatValue];
     
-    NSString *textToDisplay = card.contents;
-    NSAttributedString *cardContents = [[NSAttributedString alloc] initWithString:textToDisplay attributes:cardAttributes];
+    UIColor *strokeColor = @[[UIColor redColor], [UIColor greenColor], [UIColor purpleColor]][colorIndex];
+    UIColor *foregroundColor = [strokeColor colorWithAlphaComponent:shading];
     
-    return cardContents;
+    return [[NSAttributedString alloc] initWithString:card.contents
+                                           attributes:@{NSForegroundColorAttributeName : foregroundColor,
+                                                            NSStrokeColorAttributeName : strokeColor,
+                                                            NSStrokeWidthAttributeName : @STROKE_WIDTH}];
+    
 }
 
 @end

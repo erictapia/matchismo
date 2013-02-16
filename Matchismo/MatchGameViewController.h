@@ -7,8 +7,7 @@
 //
 
 #import "GameBaseViewController.h"
-#import "GameBase.h"
 
-@interface MatchGameViewController : GameBaseViewController <GameBase>
+@interface MatchGameViewController : GameBaseViewController
 
 @end

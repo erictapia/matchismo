@@ -6,16 +6,12 @@
 //  Copyright (c) 2013 Eric Tapia. All rights reserved.
 //
 
-/*
-    Description: A  N card matching game where N can be any number greater than two. 
-*/
-
 #import <Foundation/Foundation.h>
 #import "Deck.h"
 
 @interface CardMatchingGame : NSObject
 
-// A property containing the "history" of the last flipped card result.
+// A property containing the last flipped card result.
     @property (nonatomic, readonly) NSString *lastFlipResult;
 
 // A property containing the current game "score".

@@ -20,7 +20,7 @@
         for (NSNumber *color in [SetCard validColors]) {
             for(NSNumber *number in [SetCard validNumbers]) {
                 for (NSNumber *shading in [SetCard validShading]) {
-                    for (NSNumber *symbol in [SetCard validSymbols]) { // TODO - IMPLEMENT WITHOUT MAGIC NUMBERS
+                    for (NSNumber *symbol in [SetCard validSymbols]) {
                         SetCard *card = [[SetCard alloc] init];
                         
                         card.color      = [color unsignedIntegerValue];

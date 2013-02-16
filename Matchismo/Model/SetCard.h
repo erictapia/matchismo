@@ -9,10 +9,10 @@
 #import "Card.h"
 
 @interface SetCard : Card
-    @property (nonatomic) NSUInteger color;     // Red, Green, Purple
-    @property (nonatomic) NSUInteger number;    // Range: 1-3
-    @property (nonatomic) NSUInteger shading;   // 1 (solid), 2 (striped), 3 (open)
-    @property (nonatomic) NSUInteger symbol;      // ▲, ●, ■
+    @property (nonatomic) NSUInteger color;     // 0 (Red),  1 (Green),   2 (Purple)
+    @property (nonatomic) NSUInteger number;    // 0 (1),    1 (2),       2 (3)
+    @property (nonatomic) NSUInteger shading;   // 0 (open), 1 (striped), 2 (solid)
+    @property (nonatomic) NSUInteger symbol;    // 0 (▲),    1 (●),       2 (■)
 
     + (NSArray *)validNumbers;
     + (NSArray *)validShading;

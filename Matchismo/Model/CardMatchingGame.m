@@ -8,7 +8,6 @@
 
 #import "CardMatchingGame.h"
 #import "PlayingCard.h"
-#import "Tally.h"
 
 @interface CardMatchingGame()
 
@@ -21,7 +20,7 @@
 // A property containing the "matchNumberOfCards" required for a match.
     @property (nonatomic) NSUInteger matchNumberOfCards;
 
-// A property containing the "history" of the last flipped card result.
+// A property containing the last flipped card result.
     @property (nonatomic, readwrite) NSString *lastFlipResult;
 
 @end
@@ -43,8 +42,8 @@
     This method checks the state of the game.  When the game is over, a "YES" is returned otherwise
     a "NO" is returned.  If game is over, it will flagged all playing cards as faceup.
 */
-- (BOOL)isGameOver { //TODO
-
+- (BOOL)isGameOver {
+#warning Need to implement a generic game over.
     return NO;
 }
 
@@ -108,14 +107,12 @@
   
         // Are we building or at minimum cards required for matching?
         BOOL enoughCardsToMatch = ([otherCards count] + 1 == [self matchNumberOfCards]) ? YES : NO;
+       
+        // Check if cards make a match
+        int matchScore = [card match:otherCards];
         
-        if (enoughCardsToMatch) {
-            
-            // Check if cards make a match
-            int matchScore = [card match:otherCards];
-            
-            if (matchScore) {
-                
+        if (matchScore) {
+            if (enoughCardsToMatch)  {
                 self.lastFlipResult = @"Matched:";
                 
                 for (Card *otherCard in otherCards) {
@@ -127,26 +124,25 @@
                 
                 self.score += [CardMatchingGame getMatchBonus];
                 card.unplayable = YES;
-
-            } else {
-                // Game rules says these "otherCards" do not match.
-                // Make "otherCards" face down.
-                
-                
-                self.lastFlipResult = @"Miss-Match:";
-                
-                for (Card *otherCard in otherCards) {
-                    otherCard.faceUp = !otherCard.isFaceUp;
-                    self.lastFlipResult = [self.lastFlipResult stringByAppendingFormat:@" %@", otherCard.contents];
-                }
-                
-                self.lastFlipResult = [self.lastFlipResult stringByAppendingFormat:@" %@", card.contents];
-                
-                self.score += [CardMatchingGame getMismatchPenalty];
             }
 
             
-        } 
+        } else {
+            // Game rules says these "otherCards" do not match.
+            // Make "otherCards" face down.
+            
+            
+            self.lastFlipResult = @"Miss-Match:";
+            
+            for (Card *otherCard in otherCards) {
+                otherCard.faceUp = !otherCard.isFaceUp;
+                self.lastFlipResult = [self.lastFlipResult stringByAppendingFormat:@" %@", otherCard.contents];
+            }
+            
+            self.lastFlipResult = [self.lastFlipResult stringByAppendingFormat:@" %@", card.contents];
+            
+            self.score += [CardMatchingGame getMismatchPenalty];
+        }        
     }
     
     // Toggle "card" faceup

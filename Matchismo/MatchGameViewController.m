@@ -16,31 +16,55 @@
 
 @implementation MatchGameViewController
 
-#define CARDS_TO_MATCH 2
+#define CARDS_TO_MATCH              2
+#define ALPHA_FOR_PLAYABLE_CARD     1.0
+#define ALPHA_FOR_UNPLAYABLE_CARD   0.3
+#define ANIMATION_DURATION          0.5
 
 - (NSUInteger)cardsToMatch {
-    return CARDS_TO_MATCH;    
+    return CARDS_TO_MATCH;
 }
 
 - (Deck *)getDeck {
-    return [[PlayingCardDeck alloc] init];    
+    return [[PlayingCardDeck alloc] init];
 }
 
 - (NSString *)getUIFlipsLabel:(NSInteger)flips {
-    return [super getUIFlipsLabel:flips];
-}
-
-- (NSString *)getUIResultLabel:(NSString *)result{
-    return [super getUIResultLabel:result];
+    return [NSString stringWithFormat:@"Flips: %d", flips];
 }
 
 - (NSString *)getUIScoreLabel:(NSInteger)score {
-    return [super getUIScoreLabel:score];
+    return [NSString stringWithFormat:@"Score: %d", score];
+}
+
+- (NSString *)getUIResultLabel:(NSString *)result {
+    return result;
 }
 
 
+
 - (void)updateUIButton:(UIButton *)cardButton usingCard:(Card *)card {
-    [super updateUIButton:cardButton usingCard:card];
+    [cardButton setTitle:card.contents forState:UIControlStateSelected];
+    [cardButton setTitle:card.contents forState:UIControlStateSelected|UIControlStateDisabled];
+    
+    
+    if (card.isFaceUp)
+        [cardButton setImage:nil forState:UIControlStateNormal];
+    else
+        [cardButton setImage:[UIImage imageNamed:@"cardback.jpg"] forState:UIControlStateNormal];
+    
+    if (cardButton.selected != card.isFaceUp) {
+        
+        [UIView transitionWithView:cardButton
+                          duration:ANIMATION_DURATION
+                           options:UIViewAnimationOptionTransitionFlipFromRight
+                        animations:^{}
+                        completion:NULL];
+    }
+    
+    cardButton.selected = card.isFaceUp;
+    cardButton.enabled  = !card.isUnplayable;
+    cardButton.alpha    = card.isUnplayable ? ALPHA_FOR_UNPLAYABLE_CARD : ALPHA_FOR_PLAYABLE_CARD;
 }
 
 @end

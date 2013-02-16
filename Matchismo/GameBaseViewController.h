@@ -11,7 +11,7 @@
 
 @interface GameBaseViewController : UIViewController
 
-    // Public so subclass can use the GameBase defaults
+    // ABSTRACT METHODES
     - (NSUInteger)cardsToMatch;
     - (NSString *)getUIFlipsLabel:(NSInteger)flips;
     - (NSString *)getUIScoreLabel:(NSInteger)score;

@@ -7,9 +7,9 @@
 //
 
 #import "GameBaseViewController.h"
+#import "Card.h"
 #import "Deck.h"
 #import "CardMatchingGame.h"
-#import "Card.h"
 
 @interface GameBaseViewController ()
 
@@ -28,58 +28,37 @@
 #define CARDS_TO_MATCH 2
 
 
+
 /*
-    GameBase protocol, must be implemented by any subclass.============================================
+    ABSTRACT METHODS, must be implemented by any subclass.============================================
 */
 
 - (NSUInteger)cardsToMatch {
-    return CARDS_TO_MATCH;
+    return NULL;
 }
 
 - (Deck *)getDeck {
-    return [[Deck alloc] init];
+    return NULL;
 }
 
 - (NSString *)getUIFlipsLabel:(NSInteger)flips {
-    return [NSString stringWithFormat:@"Flips: %d", flips];
+    return NULL;
 }
 
 - (NSString *)getUIScoreLabel:(NSInteger)score {
-    return [NSString stringWithFormat:@"Score: %d", score];
+    return NULL;
 }
 
 - (NSString *)getUIResultLabel:(NSString *)result {
-    return result;
+    return NULL;
 }
 
-
-// TODO: CHANGE THIS TO USE ATTRIBUTED STRING AND WITHOUT PASSING THE CARD
-// SEE LECTURE 6 TO DO ANIMATION IN A ONE LINER.
 - (void)updateUIButton:(UIButton *)cardButton usingCard:(Card *)card {
-    [cardButton setTitle:card.contents forState:UIControlStateSelected];
-    [cardButton setTitle:card.contents forState:UIControlStateSelected|UIControlStateDisabled];
-    
-    
-    if (card.isFaceUp)
-        [cardButton setImage:nil forState:UIControlStateNormal];
-    else
-        [cardButton setImage:[UIImage imageNamed:@"cardback.jpg"] forState:UIControlStateNormal];
-    
-    // from https://github.com/tsunglintsai/standford-cs193p-01-card-game (149-154)
-    if (cardButton.selected != card.isFaceUp) {
-        [UIView beginAnimations:@"flipbutton" context:NULL];
-        [UIView setAnimationDuration:0.4];
-        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:cardButton cache:YES];
-        [UIView commitAnimations];
-    }
-    
-    cardButton.selected = card.isFaceUp;
-    cardButton.enabled = !card.isUnplayable;
-    cardButton.alpha = card.isUnplayable ? 0.3 : 1.0;
+
 }
 
 
-// Private GameBase core methods =========================================================================
+// Private core methods =========================================================================
 
 - (void)viewDidLoad
 {
@@ -118,7 +97,8 @@
 - (void)updateUIButtons {
     for (UIButton *cardButton in self.cardButtons) {
         Card *card = [self.game cardAtIndex:[self.cardButtons indexOfObject:cardButton]];
-        
+
+#warning CHANGE THIS TO USE ATTRIBUTED STRING AND WITHOUT PASSING OBJECT
         [self updateUIButton:cardButton usingCard:card];
     }
 }
