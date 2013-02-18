@@ -37,12 +37,6 @@
     return [NSString stringWithFormat:@"Score: %d", score];
 }
 
-- (NSString *)getUIResultLabel:(NSString *)result {
-    return result;
-}
-
-
-
 - (void)updateUIButton:(UIButton *)cardButton usingCard:(Card *)card {
     [cardButton setTitle:card.contents forState:UIControlStateSelected];
     [cardButton setTitle:card.contents forState:UIControlStateSelected|UIControlStateDisabled];
@@ -65,6 +59,10 @@
     cardButton.selected = card.isFaceUp;
     cardButton.enabled  = !card.isUnplayable;
     cardButton.alpha    = card.isUnplayable ? ALPHA_FOR_UNPLAYABLE_CARD : ALPHA_FOR_PLAYABLE_CARD;
+}
+
+- (NSAttributedString *)getUIAttributedContents:(Card *)card {
+    return [[NSAttributedString alloc] initWithString:card.contents];
 }
 
 @end

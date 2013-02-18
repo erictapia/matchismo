@@ -43,15 +43,10 @@
     return [NSString stringWithFormat:@"Score: %d", score];
 }
 
-- (NSString *)getUIResultLabel:(NSString *)result {
-    return result;
-}
-
-
 - (void)updateUIButton:(UIButton *)cardButton usingCard:(Card *)card {    
-    [cardButton setAttributedTitle:[self cardAttributedContents:card]  forState:UIControlStateNormal];
-    [cardButton setAttributedTitle:[self cardAttributedContents:card] forState:UIControlStateSelected];
-    [cardButton setAttributedTitle:[self cardAttributedContents:card] forState:UIControlStateSelected|UIControlStateDisabled];
+    [cardButton setAttributedTitle:[self getUIAttributedContents:card]  forState:UIControlStateNormal];
+    [cardButton setAttributedTitle:[self getUIAttributedContents:card] forState:UIControlStateSelected];
+    [cardButton setAttributedTitle:[self getUIAttributedContents:card] forState:UIControlStateSelected|UIControlStateDisabled];
     
     cardButton.selected = card.isFaceUp;
     cardButton.enabled  = !card.isUnplayable;
@@ -65,9 +60,8 @@
     }
 }
 
-- (NSAttributedString *)cardAttributedContents:(Card *)card {
+- (NSAttributedString *)getUIAttributedContents:(Card *)card {
 
-    
     NSInteger colorIndex    = ((SetCard *)card).color;
     NSInteger shadingIndex  = ((SetCard *) card).shading;
     
@@ -78,9 +72,8 @@
     
     return [[NSAttributedString alloc] initWithString:card.contents
                                            attributes:@{NSForegroundColorAttributeName : foregroundColor,
-                                                            NSStrokeColorAttributeName : strokeColor,
-                                                            NSStrokeWidthAttributeName : @STROKE_WIDTH}];
-    
+                          NSStrokeColorAttributeName : strokeColor,
+                          NSStrokeWidthAttributeName : @STROKE_WIDTH}];
 }
 
 @end

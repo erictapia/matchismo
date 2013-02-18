@@ -11,9 +11,6 @@
 
 @interface CardMatchingGame : NSObject
 
-// A property containing the last flipped card result.
-    @property (nonatomic, readonly) NSString *lastFlipResult;
-
 // A property containing the current game "score".
     @property (nonatomic, readonly) int score;
 
@@ -29,6 +26,12 @@
 // A method to return a card from the cards at "index".
     - (Card *) cardAtIndex:(NSUInteger)index;
 
-// A method to check if game is over.
-    - (BOOL)isGameOver;
+/*
+ A property containing the last result in a dictionary.
+ Keys:   RESULT      - Flipped, Re-Flipped, Matched, Miss-Match
+ CARD        - all cards selected
+ SCORE       - score added due to result
+ */
+    @property (nonatomic, readonly) NSMutableDictionary *lastResult;
+
 @end

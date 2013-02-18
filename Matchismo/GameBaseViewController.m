@@ -22,7 +22,7 @@
 
 @end
 
-@implementation GameBaseViewController
+@implementation GameBaseViewController 
 
 
 #define CARDS_TO_MATCH 2
@@ -49,12 +49,12 @@
     return NULL;
 }
 
-- (NSString *)getUIResultLabel:(NSString *)result {
-    return NULL;
-}
-
 - (void)updateUIButton:(UIButton *)cardButton usingCard:(Card *)card {
 
+}
+
+- (NSAttributedString *)getUIAttributedContents:(Card *)card {
+    return NULL;
 }
 
 
@@ -88,17 +88,47 @@
 }
 
 - (void)updateUI {
-    self.scoreLabel.text    = [self getUIScoreLabel: self.game.score];
-    self.resultLabel.text   = [self getUIResultLabel: self.game.lastFlipResult];
+    self.scoreLabel.text    = [self getUIScoreLabel:self.game.score];
     
     [self updateUIButtons];
+    [self updateResultLabel];
+}
+
+- (void)updateResultLabel {
+    
+    
+    if ([self.game.lastResult count] > 0) {
+        
+        NSMutableAttributedString *resultText = [[NSMutableAttributedString alloc] init];
+        
+        NSAttributedString *separator = [[NSAttributedString alloc] initWithString:@"\n"];
+        NSAttributedString *points = [[NSAttributedString alloc] initWithString:@" Points"];
+        NSAttributedString *whiteSpace = [[NSAttributedString alloc] initWithString:@" "];
+        
+        [resultText appendAttributedString:[[NSAttributedString alloc] initWithString:[self.game.lastResult objectForKey:@"RESULT"]]];
+        [resultText appendAttributedString:separator];
+        
+        NSArray *cards = [self.game.lastResult objectForKey:@"CARD"];
+        
+        for (Card *card in cards) {            
+            [resultText appendAttributedString:[self getUIAttributedContents:card]];
+            [resultText appendAttributedString:whiteSpace];
+        }
+        
+        [resultText appendAttributedString:separator];
+        [resultText appendAttributedString:[[NSAttributedString alloc] initWithString:[(NSNumber *)[self.game.lastResult objectForKey:@"SCORE"] stringValue]]];
+        [resultText appendAttributedString:points];
+        
+        self.resultLabel.attributedText = resultText;
+    } else {
+        self.resultLabel.text = @"Game Time";
+    }
 }
 
 - (void)updateUIButtons {
     for (UIButton *cardButton in self.cardButtons) {
         Card *card = [self.game cardAtIndex:[self.cardButtons indexOfObject:cardButton]];
 
-#warning CHANGE THIS TO USE ATTRIBUTED STRING AND WITHOUT PASSING OBJECT
         [self updateUIButton:cardButton usingCard:card];
     }
 }
@@ -118,4 +148,7 @@
     
     [self updateUI];
 }
+
+
+
 @end

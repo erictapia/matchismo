@@ -11,11 +11,13 @@
 
 @interface GameBaseViewController : UIViewController
 
-    // ABSTRACT METHODES
+    // ABSTRACT METHODS
     - (NSUInteger)cardsToMatch;
+    - (Deck *)getDeck;
     - (NSString *)getUIFlipsLabel:(NSInteger)flips;
     - (NSString *)getUIScoreLabel:(NSInteger)score;
-    - (NSString *)getUIResultLabel:(NSString *)result;
+    - (NSAttributedString *)getUIAttributedContents:(Card *)card;
     - (void)updateUIButton:(UIButton *)cardButton usingCard:(Card *)card;
+
 
 @end
