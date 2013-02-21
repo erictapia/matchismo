@@ -11,14 +11,18 @@
 #import "Deck.h"
 #import "CardMatchingGame.h"
 
-@interface GameBaseViewController ()
+@interface GameBaseViewController () <UICollectionViewDataSource>
 
     @property (nonatomic) int flipCount;
     @property (strong, nonatomic) CardMatchingGame *game;
-    @property (strong, nonatomic) IBOutletCollection(UIButton) NSArray *cardButtons;
+//    @property (strong, nonatomic) IBOutletCollection(UIButton) NSArray *cardButtons;
     @property (weak, nonatomic) IBOutlet UILabel *flipsLabel;
     @property (weak, nonatomic) IBOutlet UILabel *scoreLabel;
     @property (weak, nonatomic) IBOutlet UILabel *resultLabel;
+
+    @property (weak, nonatomic) IBOutlet UICollectionView *cardCollectionView;
+
+
 
 @end
 
@@ -34,19 +38,19 @@
 */
 
 - (NSUInteger)cardsToMatch {
-    return NULL;
+    return nil;
 }
 
 - (Deck *)getDeck {
-    return NULL;
+    return nil;
 }
 
 - (NSString *)getUIFlipsLabel:(NSInteger)flips {
-    return NULL;
+    return nil;
 }
 
 - (NSString *)getUIScoreLabel:(NSInteger)score {
-    return NULL;
+    return nil;
 }
 
 - (void)updateUIButton:(UIButton *)cardButton usingCard:(Card *)card {
@@ -54,11 +58,31 @@
 }
 
 - (NSAttributedString *)getUIAttributedContents:(Card *)card {
-    return NULL;
+    return nil;
+}
+
+- (void)updateCell:(UICollectionViewCell *)cell usingCard:(Card *)card animate:(BOOL)animate {
+    
 }
 
 
 // Private core methods =========================================================================
+
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return 1;
+}
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    return self.startingCardCount;
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"PlayingCard" forIndexPath:indexPath];
+    Card *card = [self.game cardAtIndex:indexPath.item];
+    [self updateCell:cell usingCard:card animate:NO];
+    
+    return cell;
+}
 
 - (void)viewDidLoad
 {
@@ -70,9 +94,9 @@
 - (CardMatchingGame *)game {
     if (!_game) {
         _game = [[CardMatchingGame alloc]
-                 initWithCardCount:[self.cardButtons count]
-                 usingDeck:[self getDeck]
-                 matchNumberOfCards:[self cardsToMatch]];
+                 initWithCardCount:[self startingCardCount]
+                         usingDeck:[self getDeck]
+                matchNumberOfCards:[self cardsToMatch]];
     }
     return _game;
 }
@@ -82,16 +106,15 @@
     self.flipsLabel.text = [self getUIFlipsLabel:self.flipCount];
 }
 
-- (void)setCardButtons:(NSArray *)cardButtons {
-    _cardButtons = cardButtons;
-    [self updateUI];
-}
-
 - (void)updateUI {
     self.scoreLabel.text    = [self getUIScoreLabel:self.game.score];
-    
-    [self updateUIButtons];
     [self updateResultLabel];
+ 
+    for (UICollectionViewCell *cell in [self.cardCollectionView visibleCells]) {
+        NSIndexPath *indexPath = [self.cardCollectionView indexPathForCell:cell];
+        Card *card = [self.game cardAtIndex:indexPath.item];
+        [self updateCell:cell usingCard:card animate:NO];
+    }
 }
 
 - (void)updateResultLabel {
@@ -125,14 +148,6 @@
     }
 }
 
-- (void)updateUIButtons {
-    for (UIButton *cardButton in self.cardButtons) {
-        Card *card = [self.game cardAtIndex:[self.cardButtons indexOfObject:cardButton]];
-
-        [self updateUIButton:cardButton usingCard:card];
-    }
-}
-
 - (IBAction)deal:(UIButton *)sender {
     self.game = nil;
     self.flipCount = 0;
@@ -140,13 +155,28 @@
     [self updateUI];
 }
 
-- (IBAction)flipCard:(UIButton *)sender {
-    [self.game flipCardAtIndex:[self.cardButtons indexOfObject:sender]];
+- (IBAction)flipCard:(UITapGestureRecognizer *)gesture {
     
-    if (!sender.selected)
-        self.flipCount++;
-    
-    [self updateUI];
+    CGPoint tapLocation = [gesture locationInView:self.cardCollectionView];
+    NSIndexPath *indexPath = [self.cardCollectionView indexPathForItemAtPoint:tapLocation];
+        
+    if (indexPath ) {
+        
+        Card *card = [self.game cardAtIndex:indexPath.item];
+        if (!card.isUnplayable) {
+            [self.game flipCardAtIndex:indexPath.item];
+            if (card.faceUp) {
+                self.flipCount++;
+            }
+            
+            [self updateUI];
+            
+            UICollectionViewCell *cell = [self.cardCollectionView cellForItemAtIndexPath:indexPath];
+            [self updateCell:cell usingCard:card animate:YES];
+        }
+        
+    }
+
 }
 
 
